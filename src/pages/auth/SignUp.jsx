@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import logo1 from '../../assets/images/logo1.svg';
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -7,7 +8,7 @@ const SignUp = () => {
     <div className="min-h-screen flex items-center justify-center  font-sans">
       <div className="bg-white rounded-3xl shadow p-12 w-full max-w-lg flex flex-col items-center">
         <div className="mb-8 flex flex-col items-center">
-          <img src="/src/assets/images/logo1.svg" alt="DROP logo" className='w-44' />
+          <img src={logo1} alt="DROP logo" className='w-44' />
         </div>
         <h2 className="text-2xl font-bold mb-8">Sign Up</h2>
         <form className="w-full flex flex-col gap-4">
