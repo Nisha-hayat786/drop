@@ -31,9 +31,9 @@ const Sidebar = () => {
               <li key={item.to} className="mb-2 last:mb-0">
                 <Link
                   to={item.to}
-                  className={`flex items-center px-6 py-2 rounded-lg text-base font-medium transition-colors duration-150 ${location.pathname === item.to ? 'bg-white text-black' : 'hover:text-black hover:bg-white'}`}
+                  className={`flex items-center px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${location.pathname === item.to ? 'bg-white text-black' : 'hover:text-black hover:bg-white'}`}
                 >
-                  <span className="mr-3">{item.icon}</span>
+                  <span className="mr-3 text-base">{item.icon}</span>
                   {item.label}
                 </Link>
               </li>

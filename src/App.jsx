@@ -1,7 +1,12 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import SuperAdminLayout from './components/SuperAdminLayout';
 import Dashboard from './pages/Dashboard';
+import SuperAdmin from './pages/SuperAdmin';
+import Users from './pages/superadmin/Users';
+import Venues from './pages/superadmin/Venues';
+import AdminPosts from './pages/superadmin/Posts';
 import SignUp from './pages/auth/SignUp';
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -14,10 +19,8 @@ import Subscriptions from './pages/Subscriptions';
 import PostDetail from './pages/PostDetail';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-
-const Placeholder = ({ title }) => (
-  <div className="text-3xl text-center mt-24">{title} Page (Coming Soon)</div>
-);
+import UserProfile from './pages/superadmin/UserProfile';
+import VenueProfile from './pages/superadmin/VenueProfile';
 
 const App = () => {
   return (
@@ -30,7 +33,25 @@ const App = () => {
       <Route path="/auth/check-email" element={<CheckEmail />} />
       <Route path="/auth/reset-password" element={<ResetPassword />} />
       <Route path="/auth/reset-success" element={<ResetSuccess />} />
-      {/* Main app routes with layout */}
+      
+      {/* SuperAdmin routes with SuperAdminLayout */}
+      <Route
+        path="/superadmin/*"
+        element={
+          <SuperAdminLayout>
+            <Routes>
+              <Route path="/" element={<SuperAdmin />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/venues" element={<Venues />} />
+              <Route path="/posts" element={<AdminPosts />} />
+              <Route path="/user/:id" element={<UserProfile />} />
+              <Route path="/venue/:id" element={<VenueProfile />} />
+            </Routes>
+          </SuperAdminLayout>
+        }
+      />
+      
+      {/* Main app routes with layout (for venue users) */}
       <Route
         path="/*"
         element={

@@ -149,10 +149,10 @@ const approvalPendingPosts = [
   },
 ];
 
-function AddPostModal({ open, onClose }) {
+function AddPostModal({ open, onClose }) {  
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#00000080]">
       <div className="bg-white rounded-2xl p-8 pt-6 w-full max-w-3xl relative">
         <button onClick={onClose} className="absolute top-6 right-6 text-2xl text-gray-400 hover:text-black">&times;</button>
         <h2 className="text-2xl font-bold mb-6">Add New Post</h2>
