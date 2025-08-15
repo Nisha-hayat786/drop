@@ -718,7 +718,7 @@ const Profile = () => {
                                 <div className="text-black text-lg">
                                     {stat.icon}
                                 </div>
-                                <div className="text-black text-sm font-medium">{stat.label}</div>
+                                <div className="text-black text-sm font-semibold">{stat.label}</div>
                             </div>
                             <div className="text-xl font-bold text-black mb-3">{stat.value}</div>
                             <div className="text-green-500 text-xs">
@@ -754,8 +754,8 @@ const Profile = () => {
                             <table className="w-full">
                                 <thead className="bg-gray-900 text-white">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-sm font-medium">Filter</th>
-                                        <th className="px-4 py-3 justify-end text-sm font-medium flex items-center gap-1">
+                                        <th className="px-4 py-3 text-left text-sm font-semibold">Filter</th>
+                                        <th className="px-4 py-3 justify-end text-sm font-semibold flex items-center gap-1">
                                             Time Used
                                             <FaSort />
                                         </th>
@@ -794,8 +794,8 @@ const Profile = () => {
                             <table className="w-full">
                                 <thead className="bg-gray-900 text-white">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-sm font-medium">Filter Combinations</th>
-                                        <th className="px-4 py-3 justify-end text-sm font-medium flex items-center gap-1">
+                                        <th className="px-4 py-3 text-left text-sm font-semibold">Filter Combinations</th>
+                                        <th className="px-4 py-3 justify-end text-sm font-semibold flex items-center gap-1">
                                             Time Used
                                             <FaSort />
                                         </th>
@@ -833,7 +833,7 @@ const Profile = () => {
                         {/* Form Fields */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     First Name *
                                 </label>
                                 <input
@@ -847,7 +847,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Last Name *
                                 </label>
                                 <input
@@ -861,7 +861,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Email Address *
                                 </label>
                                 <input
@@ -875,7 +875,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Phone Number
                                 </label>
                                 <input
@@ -888,7 +888,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Address
                                 </label>
                                 <input
@@ -901,7 +901,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     City
                                 </label>
                                 <input
@@ -914,7 +914,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     State
                                 </label>
                                 <input
@@ -927,7 +927,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Country
                                 </label>
                                 <input
@@ -940,7 +940,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Zip Code
                                 </label>
                                 <input
@@ -953,7 +953,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Role
                                 </label>
                                 <select
@@ -968,7 +968,7 @@ const Profile = () => {
                                 </select>
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Description
                                 </label>
                                 <textarea
@@ -981,7 +981,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
                                     Website
                                 </label>
                                 <input

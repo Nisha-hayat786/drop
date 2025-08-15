@@ -292,25 +292,29 @@ const Users = () => {
 
                 // Here you would typically make an API call to update the user
                 // For now, we'll just show success and close the modal
-                
-                // Show success message
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'User information updated successfully!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                const response = await api.patch(`/users/update/user/${editingUser.id}`, editForm);
 
-                setShowEditModal(false);
-                setEditingUser(null);
-                
-                // Refresh the users list
-                dispatch(fetchUsers({ pageNumber: pagination.pageNumber, pageSize: pagination.pageSize, searchTerm, filterStatus }));
+                if (response.data.status) {
+
+                    // Show success message
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'User information updated successfully!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    setShowEditModal(false);
+                    setEditingUser(null);
+
+                    // Refresh the users list
+                    dispatch(fetchUsers({ pageNumber: pagination.pageNumber, pageSize: pagination.pageSize, searchTerm, filterStatus }));
+                }
             }
         } catch (error) {
             console.error('Error updating user:', error);
-            
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
@@ -345,7 +349,7 @@ const Users = () => {
             .filter(user => selectedUsers.includes(user.id))
             .map(user => `${user.firstName} ${user.lastName}`)
             .join(', ');
-        
+
         try {
             const result = await Swal.fire({
                 title: `Are you sure?`,
@@ -401,14 +405,14 @@ const Users = () => {
                         confirmButtonColor: '#F59E0B'
                     });
                 }
-                
+
                 // Clear selection and refresh the users list
                 setSelectedUsers([]);
                 dispatch(fetchUsers({ pageNumber: pagination.pageNumber, pageSize: pagination.pageSize, searchTerm, filterStatus }));
             }
         } catch (error) {
             console.error(`Error bulk ${actionText}ing users:`, error);
-            
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
@@ -418,12 +422,63 @@ const Users = () => {
         }
     };
 
+    // Export users to CSV
+    const exportToCSV = () => {
+        // Define CSV headers
+        const headers = [
+            'ID',
+            'First Name',
+            'Last Name',
+            'Email',
+            'Phone',
+            'Role',
+            'Status',
+            'Blocked',
+            'Joining Date',
+            'City',
+            'State',
+            'Country'
+        ];
+
+        // Prepare CSV data
+        const csvData = filteredUsers.map(user => [
+            user.id,
+            user.firstName || '',
+            user.lastName || '',
+            user.email || '',
+            user.phone || '',
+            user.role || '',
+            user.status || '',
+            user.isBlocked ? 'Yes' : 'No',
+            user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
+            user.city || '',
+            user.state || '',
+            user.country || ''
+        ]);
+
+        // Combine headers and data
+        const csvContent = [headers, ...csvData]
+            .map(row => row.map(cell => `"${cell}"`).join(','))
+            .join('\n');
+
+        // Create and download CSV file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `users_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // Handle block/unblock user
     const handleBlockUser = async (user) => {
         const action = user.isBlocked ? 'unblock' : 'block';
         const actionText = user.isBlocked ? 'unblock' : 'block';
         const userName = `${user.firstName} ${user.lastName}`;
-        
+
         try {
             const result = await Swal.fire({
                 title: `Are you sure?`,
@@ -449,7 +504,7 @@ const Users = () => {
 
                 const endpoint = user.isBlocked ? `/users/${user.id}/unblock` : `/users/${user.id}/block`;
                 const response = await api.patch(endpoint);
-                
+
                 if (response.data.status) {
                     // Show success message
                     await Swal.fire({
@@ -459,7 +514,7 @@ const Users = () => {
                         timer: 2000,
                         showConfirmButton: false
                     });
-                    
+
                     // Refresh the users list
                     dispatch(fetchUsers({ pageNumber: pagination.pageNumber, pageSize: pagination.pageSize, searchTerm, filterStatus }));
                 } else {
@@ -468,7 +523,7 @@ const Users = () => {
             }
         } catch (error) {
             console.error(`Error ${actionText}ing user:`, error);
-            
+
             let errorMessage = 'Failed to update user status';
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
@@ -568,14 +623,21 @@ const Users = () => {
                         <option value="inactive">Inactive</option>
                         <option value="pending">Pending</option>
                     </select>
-                    <div className="relative">
+                    {/* <div className="relative">
                         <input
                             type="text"
                             placeholder="Custom"
                             className="px-4 py-2 placeholder:text-black border border-gray-300 rounded-lg focus:outline-none pr-10"
                         />
                         <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2" />
-                    </div>
+                    </div> */}
+                     <button 
+                        onClick={exportToCSV}
+                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                     >
+                        <FaDownload />
+                        Export
+                    </button>
                     <button
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
                         onClick={() => dispatch(fetchUsers({ pageNumber: pagination.pageNumber, pageSize: pagination.pageSize, searchTerm, filterStatus }))}
@@ -649,8 +711,8 @@ const Users = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/superadmin/user/${user.id}`)}>
                                             <div className="flex items-center">
-                                            {user.image ? <img src={user.image} alt="user" className='w-10 h-10 rounded-full' /> :  <div className="w-10 h-10 bg-red-700 rounded-full flex items-center justify-center">
-                                                  <span className="text-white text-sm font-medium">
+                                                {user.image ? <img src={user.image} alt="user" className='w-10 h-10 rounded-full' /> : <div className="w-10 h-10 bg-red-700 rounded-full flex items-center justify-center">
+                                                    <span className="text-white text-sm font-medium">
                                                         {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                                                     </span>
                                                 </div>}
@@ -677,11 +739,10 @@ const Users = () => {
                                             {getStatusBadge(user.status)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                user.isBlocked 
-                                                    ? 'bg-red-100 text-red-800' 
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${user.isBlocked
+                                                    ? 'bg-red-100 text-red-800'
                                                     : 'bg-green-100 text-green-800'
-                                            }`}>
+                                                }`}>
                                                 {user.isBlocked ? 'Blocked' : 'Active'}
                                             </span>
                                         </td>
@@ -693,19 +754,18 @@ const Users = () => {
                                                 <button className="text-green-600 hover:text-green-900" title="Edit" onClick={() => handleEditUser(user)}>
                                                     <FaEdit />
                                                 </button>
-                                                <button 
-                                                    className={`w-20 py-1 rounded-lg text-xs font-medium transition-colors ${
-                                                        user.isBlocked
+                                                <button
+                                                    className={`w-20 py-1 rounded-lg text-xs font-medium transition-colors ${user.isBlocked
                                                             ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                                             : 'bg-red-100 text-red-700 hover:bg-red-200'
-                                                    }`}
+                                                        }`}
                                                     onClick={() => handleBlockUser(user)}
                                                     title={user.isBlocked ? 'Unblock User' : 'Block User'}
                                                 >
                                                     {user.isBlocked ? <FaCheck className="inline mr-1" /> : <FaBan className="inline mr-1" />}
                                                     {user.isBlocked ? 'Unblock' : 'Block'}
                                                 </button>
-                                              
+
                                             </div>
                                         </td>
                                     </tr>
@@ -746,8 +806,8 @@ const Users = () => {
                             <button
                                 key={pageNum}
                                 className={`px-3 py-1 rounded text-sm ${pageNum === pagination.pageNumber
-                                        ? 'bg-black text-white'
-                                        : 'border border-gray-300 hover:bg-gray-50'
+                                    ? 'bg-black text-white'
+                                    : 'border border-gray-300 hover:bg-gray-50'
                                     }`}
                                 onClick={() => handlePageChange(pageNum)}
                             >
@@ -1007,7 +1067,7 @@ const Users = () => {
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
-                                    <div>
+                                    {/* <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Role
                                         </label>
@@ -1021,7 +1081,7 @@ const Users = () => {
                                             <option value="admin">Admin</option>
                                             <option value="superadmin">Super Admin</option>
                                         </select>
-                                    </div>
+                                    </div> */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Image URL

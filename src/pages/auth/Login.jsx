@@ -26,10 +26,8 @@ const Login = () => {
       const from = location.state?.from?.pathname || '/';
       if (role === 'admin') {
         navigate('/superadmin', { replace: true });
-      } else if (role === 'venue') {
-        navigate('/dashboard', { replace: true });
       } else {
-        navigate(from, { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [isAuthenticated, role, navigate, location]);
@@ -84,7 +82,7 @@ const Login = () => {
         
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-medium mb-1">Email</label>
+            <label className="block text-xs font-semibold mb-1">Email</label>
             <input 
               type="email" 
               name="email"
@@ -96,7 +94,7 @@ const Login = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Password</label>
+            <label className="block text-xs font-semibold mb-1">Password</label>
             <div className="relative">
               <input 
                 type={showPassword ? 'text' : 'password'} 
@@ -121,7 +119,7 @@ const Login = () => {
           <button 
             type="submit"
             disabled={isLoading}
-            className="w-full bg-black text-white rounded-lg py-2 mt-2 font-medium text-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-black text-white rounded-lg py-2 mt-2 font-semibold text-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Signing in...' : 'Log In'}
           </button>

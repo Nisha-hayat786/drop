@@ -14,7 +14,7 @@ const ResetPassword = () => {
         <h2 className="text-2xl font-bold mb-8 text-center">Reset password</h2>
         <form className="w-full flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-medium mb-1">New password</label>
+            <label className="block text-xs font-semibold mb-1">New password</label>
             <div className="relative">
               <input type={showPassword ? 'text' : 'password'} placeholder="New password" className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black pr-10" />
               <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" onClick={() => setShowPassword(v => !v)}>
@@ -26,7 +26,7 @@ const ResetPassword = () => {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Confirm password</label>
+            <label className="block text-xs font-semibold mb-1">Confirm password</label>
             <div className="relative">
               <input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black pr-10" />
               <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" onClick={() => setShowConfirm(v => !v)}>
@@ -37,7 +37,7 @@ const ResetPassword = () => {
               </button>
             </div>
           </div>
-          <Link to="/auth/reset-success" className="w-full bg-black text-white rounded-lg py-2 mt-2 font-medium text-center">Reset Password</Link>
+          <Link to="/auth/reset-success" className="w-full bg-black text-white rounded-lg py-2 mt-2 font-semibold text-center">Reset Password</Link>
         </form>
       </div>
     </div>

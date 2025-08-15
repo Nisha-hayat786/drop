@@ -59,8 +59,8 @@ const Subscriptions = () => {
       <h1 className="text-4xl font-extrabold mb-2 text-center">Plans & Pricing</h1>
       <p className="text-center text-gray-600 max-w-2xl mb-10">Choose the plan that fits your needs. All plans include essential features to get you started, with options to scale as you grow. No hidden fees and the flexibility to change anytime.</p>
       <div className="flex gap-2 mb-2 bg-[#dadada] p-1 rounded-lg">
-        <button onClick={() => setBilling('Monthly')} className={`px-6 py-1.5 rounded-lg text-sm font-medium ${billing === 'Monthly' ? 'bg-white' : 'bg-[#dadada] text-black'}`}>Monthly</button>
-        <button onClick={() => setBilling('Annual')} className={`px-6 py-1.5 rounded-lg text-sm font-medium ${billing === 'Annual' ? 'bg-white' : 'bg-[#dadada] text-black'}`}>Annual</button>
+        <button onClick={() => setBilling('Monthly')} className={`px-6 py-1.5 rounded-lg text-sm font-semibold ${billing === 'Monthly' ? 'bg-white' : 'bg-[#dadada] text-black'}`}>Monthly</button>
+        <button onClick={() => setBilling('Annual')} className={`px-6 py-1.5 rounded-lg text-sm font-semibold ${billing === 'Annual' ? 'bg-white' : 'bg-[#dadada] text-black'}`}>Annual</button>
       </div>
       <div className="text-xs text-blue-600 mb-16">-15% off on annual payments</div>
       <div className="flex flex-col md:flex-row gap-8 justify-center items-end w-full max-w-5xl">

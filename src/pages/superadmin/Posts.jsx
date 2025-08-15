@@ -131,7 +131,7 @@ const Posts = () => {
             <div className="flex border-b border-gray-200 gap-2">
                 <button
                     onClick={() => setActiveTab('posts')}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium ${
+                    className={`px-6 py-2 rounded-lg text-sm font-semibold ${
                         activeTab === 'posts'
                             ? 'bg-black text-white'
                             : 'bg-[#dadada] text-black'
@@ -141,7 +141,7 @@ const Posts = () => {
                 </button>
                 <button
                     onClick={() => setActiveTab('requests')}
-                    className={`px-6 py-2 rounded-lg text-sm font-medium ${
+                    className={`px-6 py-2 rounded-lg text-sm font-semibold ${
                         activeTab === 'requests'
                             ? 'bg-black text-white'
                             : 'bg-[#dadada] text-black'
@@ -209,16 +209,16 @@ const Posts = () => {
                                         className="rounded"
                                     />
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
                                     Post
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
                                     Posted By
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
                                     Date
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -245,10 +245,10 @@ const Posts = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="w-8 h-8 bg-red-700 rounded-full flex items-center justify-center mr-3">
-                                                <span className="text-white text-xs font-medium">{post.avatar}</span>
+                                                <span className="text-white text-xs font-semibold">{post.avatar}</span>
                                             </div>
                                             <div>
-                                                <div className="text-sm font-medium text-gray-900">{post.postedBy}</div>
+                                                <div className="text-sm font-semibold text-gray-900">{post.postedBy}</div>
                                                 <div className="text-sm text-gray-500">{post.venue}</div>
                                             </div>
                                         </div>
@@ -256,7 +256,7 @@ const Posts = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {post.date}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">
                                         <div className="flex gap-2">
                                             
                                             {activeTab === 'requests' && (
@@ -354,7 +354,7 @@ const Posts = () => {
                         <div className="flex justify-between items-start mb-6">
                             <div className="flex items-center">
                                 <div className="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center mr-4">
-                                    <span className="text-white text-sm font-medium">{selectedPost.avatar}</span>
+                                    <span className="text-white text-sm font-semibold">{selectedPost.avatar}</span>
                                 </div>
                                 <div>
                                     <div className="text-lg font-bold">{selectedPost.postedBy}</div>

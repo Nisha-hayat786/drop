@@ -84,7 +84,7 @@ const AppRoutes = () => {
       <Route
         path="/*"
         element={
-          <ProtectedRoute allowedRoles={['venue']}>
+          <ProtectedRoute allowedRoles={['user']}>
             <Layout>
               <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />

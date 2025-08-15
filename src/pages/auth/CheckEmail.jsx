@@ -11,7 +11,7 @@ const CheckEmail = () => {
         </div>
         <h2 className="text-2xl font-bold mb-2 text-center">Check your email</h2>
         <p className="text-sm text-gray-600 mb-8 text-center">Check your email we sent you a link to change your password</p>
-        <Link to="/auth/reset-password" className="w-full bg-black text-white rounded-lg py-2 mt-2 font-medium text-center">Reset</Link>
+        <Link to="/auth/reset-password" className="w-full bg-black text-white rounded-lg py-2 mt-2 font-semibold text-center">Reset</Link>
       </div>
     </div>
   );

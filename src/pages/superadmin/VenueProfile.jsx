@@ -338,7 +338,7 @@ const VenueProfile = () => {
                     <div className="flex justify-center gap-2">
                         <button
                             onClick={() => setActiveTab('Detail')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'Detail'
+                            className={`px-6 py-2 rounded-md text-sm font-semibold transition-colors ${activeTab === 'Detail'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                                 }`}
@@ -347,7 +347,7 @@ const VenueProfile = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('Stats')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'Stats'
+                            className={`px-6 py-2 rounded-md text-sm font-semibold transition-colors ${activeTab === 'Stats'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                                 }`}
@@ -356,7 +356,7 @@ const VenueProfile = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('Posts')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'Posts'
+                            className={`px-6 py-2 rounded-md text-sm font-semibold transition-colors ${activeTab === 'Posts'
                                 ? 'bg-black text-white'
                                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                                 }`}

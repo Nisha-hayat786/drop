@@ -208,8 +208,8 @@ const Posts = () => {
         </button>
       </div>
       <div className="flex gap-2 my-4">
-        <button onClick={() => setTab('Posts')} className={`px-6 py-2 rounded-lg text-sm font-medium ${tab === 'Posts' ? 'bg-black text-white' : 'bg-[#dadada] text-black'}`}>Posts</button>
-        <button onClick={() => setTab('Approval Pending')} className={`px-6 py-2 rounded-lg text-sm font-medium ${tab === 'Approval Pending' ? 'bg-black text-white' : 'bg-[#dadada] text-black'}`}>Approval Pending</button>
+        <button onClick={() => setTab('Posts')} className={`px-6 py-2 rounded-lg text-sm font-semibold ${tab === 'Posts' ? 'bg-black text-white' : 'bg-[#dadada] text-black'}`}>Posts</button>
+        <button onClick={() => setTab('Approval Pending')} className={`px-6 py-2 rounded-lg text-sm font-semibold ${tab === 'Approval Pending' ? 'bg-black text-white' : 'bg-[#dadada] text-black'}`}>Approval Pending</button>
       </div>
       <div className="flex items-center justify-between gap-2 mb-6">
         <div className="relative w-2/3">

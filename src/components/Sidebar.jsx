@@ -1,13 +1,16 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LuSettings } from "react-icons/lu";
 import { GoHome } from 'react-icons/go';
 import { BiNews } from 'react-icons/bi';
 import { MdSubscriptions } from 'react-icons/md';
 import { IoMdAdd } from 'react-icons/io';
+import { FaSignOutAlt } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../store/slices/authSlice';
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: <GoHome /> },
+  { to: '/dashboard', label: 'Dashboard', icon: <GoHome /> },
   { to: '/posts', label: 'Posts', icon: <BiNews /> },
   { to: '/subscriptions', label: 'Subscriptions', icon: <MdSubscriptions /> },
   { to: '/settings', label: 'Settings', icon: <LuSettings /> },
@@ -15,12 +18,18 @@ const navItems = [
 
 const Sidebar = () => {
   const location = useLocation();
-  const handleAddPost = () => {
-    // Dispatch a custom event to open the modal in Posts page
-    window.dispatchEvent(new CustomEvent('openAddPostModal'));
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate('/auth/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
-  
   return (
     <div className="w-[240px] text-white fixed bottom-3 left-3 top-3 z-50">
       <div className='bg-black py-8 px-4 flex flex-col items-center rounded-xl h-full'>
@@ -33,7 +42,7 @@ const Sidebar = () => {
               <li key={item.to} className="mb-2 last:mb-0">
                 <Link
                   to={item.to}
-                  className={`flex items-center px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${location.pathname === item.to ? 'bg-white text-black' : 'hover:text-black hover:bg-white'}`}
+                  className={`flex items-center px-6 py-2 rounded-lg text-sm font-semibold transition-colors duration-150 ${location.pathname === item.to ? 'bg-white text-black' : 'hover:text-black hover:bg-white'}`}
                 >
                   <span className="mr-3 text-base">{item.icon}</span>
                   {item.label}
@@ -42,7 +51,17 @@ const Sidebar = () => {
             ))}
           </ul>
         </nav>
-        <div className="flex-1" />
+        <div className="flex-1" >
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="fixed bottom-10 left-7 w-fit flex items-center px-6 py-2 rounded-lg text-sm font-semibold text-white hover:text-black hover:bg-white transition-colors duration-150"
+          >
+            <span className="mr-3 text-base"><FaSignOutAlt /></span>
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );
