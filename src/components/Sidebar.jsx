@@ -19,6 +19,8 @@ const Sidebar = () => {
     // Dispatch a custom event to open the modal in Posts page
     window.dispatchEvent(new CustomEvent('openAddPostModal'));
   };
+
+  
   return (
     <div className="w-[240px] text-white fixed bottom-3 left-3 top-3 z-50">
       <div className='bg-black py-8 px-4 flex flex-col items-center rounded-xl h-full'>

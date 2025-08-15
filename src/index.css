@@ -10,3 +10,41 @@ button,
 a {
   cursor: pointer;
 }
+
+
+::-webkit-scrollbar{
+  width: 0px;
+}
+
+::-webkit-scrollbar-track{
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb{
+  background: #888;
+}
+
+/* Custom SweetAlert2 Styles */
+.swal2-popup {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 16px;
+}
+
+.swal2-title {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.swal2-html-container {
+  color: #6b7280;
+}
+
+.swal2-confirm {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+.swal2-cancel {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}

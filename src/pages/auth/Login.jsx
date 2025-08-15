@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser, clearError, selectError, selectIsLoading, selectIsAuthenticated, selectRole } from '../../store/slices/authSlice';
 import logo1 from '../../assets/images/logo1.svg';
 
 const Login = () => {
@@ -8,38 +10,62 @@ const Login = () => {
     email: '',
     password: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const role = useSelector(selectRole);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && role) {
+      const from = location.state?.from?.pathname || '/';
+      if (role === 'admin') {
+        navigate('/superadmin', { replace: true });
+      } else if (role === 'venue') {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
+    }
+  }, [isAuthenticated, role, navigate, location]);
+
+  // Clear error when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Clear error when user starts typing
+    if (error) {
+      dispatch(clearError());
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      // For demo purposes, check email to determine role
-      if (formData.email && formData.password) {
-        if (formData.email.includes('admin') || formData.email.includes('super')) {
-          // SuperAdmin role
-          localStorage.setItem('userRole', 'superadmin');
-          localStorage.setItem('userEmail', formData.email);
-          navigate('/superadmin');
-        } else {
-          // Venue role (default)
-          localStorage.setItem('userRole', 'venue');
-          localStorage.setItem('userEmail', formData.email);
-          navigate('/');
-        }
-      }
-      setIsLoading(false);
-    }, 1000);
+    if (!formData.email || !formData.password) {
+      return;
+    }
+
+    try {
+      await dispatch(loginUser(formData)).unwrap();
+      // Navigation will be handled by useEffect above
+    } catch (error) {
+      // Error is already handled by the slice
+      console.error('Login failed:', error);
+    }
   };
 
   return (
@@ -49,6 +75,13 @@ const Login = () => {
           <img src={logo1} alt="DROP logo" className='w-44' />
         </div>
         <h2 className="text-2xl font-bold mb-8">Log In</h2>
+        
+        {error && (
+          <div className="w-full mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <div>
             <label className="block text-xs font-medium mb-1">Email</label>
@@ -59,6 +92,7 @@ const Login = () => {
               onChange={handleChange}
               placeholder="enter your email" 
               className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black" 
+              required
             />
           </div>
           <div>
@@ -71,6 +105,7 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="Password" 
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black pr-10" 
+                required
               />
               <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" onClick={() => setShowPassword(v => !v)}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -92,13 +127,6 @@ const Login = () => {
           </button>
         </form>
         <p className='text-sm text-gray-500 mt-4'>Don't have an account? <Link to="/auth/signup" className='text-black underline'>Register</Link></p>
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Demo Credentials:</strong><br />
-            • <strong>SuperAdmin:</strong> admin@drop.com / any password<br />
-            • <strong>Venue:</strong> venue@drop.com / any password
-          </p>
-        </div>
       </div>
     </div>
   );

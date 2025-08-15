@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import store from './store';
+import { checkAuthStatus } from './store/slices/authSlice';
 import Layout from './components/Layout';
 import SuperAdminLayout from './components/SuperAdminLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoadingSpinner from './components/LoadingSpinner';
 import Dashboard from './pages/Dashboard';
 import SuperAdmin from './pages/SuperAdmin';
 import Users from './pages/superadmin/Users';
@@ -22,10 +28,21 @@ import Settings from './pages/Settings';
 import UserProfile from './pages/superadmin/UserProfile';
 import VenueProfile from './pages/superadmin/VenueProfile';
 
-const App = () => {
+// Component to handle auth status check
+const AuthChecker = ({ children }) => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(checkAuthStatus());
+  }, [dispatch]);
+
+  return children;
+};
+
+const AppRoutes = () => {
   return (
     <Routes>
-      {/* Auth routes without layout */}
+      {/* Auth routes without layout - no authentication required */}
       <Route path="/auth" element={<Auth />} />
       <Route path="/auth/signup" element={<SignUp />} />
       <Route path="/auth/login" element={<Login />} />
@@ -34,40 +51,64 @@ const App = () => {
       <Route path="/auth/reset-password" element={<ResetPassword />} />
       <Route path="/auth/reset-success" element={<ResetSuccess />} />
       
-      {/* SuperAdmin routes with SuperAdminLayout */}
+      {/* Root path - redirect based on role */}
+      <Route 
+        path="/" 
+        element={
+          <ProtectedRoute>
+            <LoadingSpinner />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* SuperAdmin routes - only accessible by admin role */}
       <Route
         path="/superadmin/*"
         element={
-          <SuperAdminLayout>
-            <Routes>
-              <Route path="/" element={<SuperAdmin />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/venues" element={<Venues />} />
-              <Route path="/posts" element={<AdminPosts />} />
-              <Route path="/user/:id" element={<UserProfile />} />
-              <Route path="/venue/:id" element={<VenueProfile />} />
-            </Routes>
-          </SuperAdminLayout>
+          <ProtectedRoute allowedRoles={['admin']}>
+            <SuperAdminLayout>
+              <Routes>
+                <Route path="/" element={<SuperAdmin />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/venues" element={<Venues />} />
+                <Route path="/posts" element={<AdminPosts />} />
+                <Route path="/user/:id" element={<UserProfile />} />
+                <Route path="/venue/:id" element={<VenueProfile />} />
+              </Routes>
+            </SuperAdminLayout>
+          </ProtectedRoute>
         }
       />
       
-      {/* Main app routes with layout (for venue users) */}
+      {/* Main app routes - accessible by venue role */}
       <Route
         path="/*"
         element={
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/posts" element={<Posts />} />
-              <Route path="/post/:id" element={<PostDetail />} />
-              <Route path="/subscriptions" element={<Subscriptions />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings/>} />
-            </Routes>
-          </Layout>
+          <ProtectedRoute allowedRoles={['venue']}>
+            <Layout>
+              <Routes>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/posts" element={<Posts />} />
+                <Route path="/post/:id" element={<PostDetail />} />
+                <Route path="/subscriptions" element={<Subscriptions />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings/>} />
+              </Routes>
+            </Layout>
+          </ProtectedRoute>
         }
       />
     </Routes>
+  );
+};
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <AuthChecker>
+        <AppRoutes />
+      </AuthChecker>
+    </Provider>
   );
 };
 

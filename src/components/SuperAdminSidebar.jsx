@@ -1,7 +1,9 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../store/slices/authSlice';
 import { GoHome } from 'react-icons/go';
-import { FaUsers, FaBuilding, FaFileAlt } from 'react-icons/fa';
+import { FaUsers, FaBuilding, FaFileAlt, FaSignOutAlt } from 'react-icons/fa';
 
 const navItems = [
   { to: '/superadmin', label: 'Dashboard', icon: <GoHome /> },
@@ -12,13 +14,23 @@ const navItems = [
 
 const SuperAdminSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate('/auth/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <div className="w-[240px] text-white fixed bottom-3 left-3 top-3 z-50">
       <div className='bg-black py-8 px-4 flex flex-col items-center rounded-xl h-full'>
-      <img src="/src/assets/images/logo.svg" alt="" className='w-28 mb-10' />
+        <img src="/src/assets/images/logo.svg" alt="" className='w-28 mb-10' />
 
-        
         {/* Navigation */}
         <nav className="w-full">
           <ul className="list-none p-0 w-full">
@@ -41,6 +53,15 @@ const SuperAdminSidebar = () => {
         </nav>
         
         <div className="flex-1" />
+        
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center px-6 py-2 rounded-lg text-sm font-medium text-white hover:text-black hover:bg-white transition-colors duration-150"
+        >
+          <span className="mr-3 text-base"><FaSignOutAlt /></span>
+          Logout
+        </button>
       </div>
     </div>
   );

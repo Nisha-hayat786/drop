@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaEdit, FaTrash, FaEye, FaDownload, FaCalendarAlt, FaTimes, FaUpload, FaPlus, FaCheck, FaBan } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectToken } from '../../store/slices/authSlice';
+import api from '../../utils/axios';
+import { BiRefresh } from 'react-icons/bi';
+import { Country, State, City } from 'country-state-city';
 
 const Venues = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -8,139 +13,95 @@ const Venues = () => {
     const [selectedVenues, setSelectedVenues] = useState([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showRequestModal, setShowRequestModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingVenues, setIsLoadingVenues] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [venues, setVenues] = useState([]);
     const navigate = useNavigate();
+    const token = useSelector(selectToken);
+
     const [newVenue, setNewVenue] = useState({
-        firstName: 'John',
-        lastName: 'Doe',
-        venueName: 'Nikki Beach Dubai',
-        email: 'example@gmail.com',
-        phone: '+535646514351124351',
-        addressLine1: '',
+        firstName: '',
+        lastName: '',
+        venueName: '',
+        venueImage: '',
+        email: '',
+        address: '',
+        phone: '',
+        countryCode: '+971',
+        dob: '',
+        image: '',
+        password: '',
+        role: 'user',
         city: '',
         state: '',
         zipCode: '',
-        country: '',
-        description: ''
+        country: 'UAE',
+        description: '',
+        website: ''
     });
 
-    // Mock data for venues
-    const venues = [
-        {
-            id: 1,
-            ownerName: 'Sarah Thompson',
-            venueName: 'Oceanview Resort',
-            email: 'sarah.t@example.com',
-            address: '456 Ocean Drive, Miami, FL 33139',
-            joiningDate: '2023-02-15',
-            status: 'active',
-            avatar: 'ST'
-        },
-        {
-            id: 2,
-            ownerName: 'James Smith',
-            venueName: 'City Park Hotel',
-            email: 'james.s@example.com',
-            address: '789 Park Avenue, New York, NY 10001',
-            joiningDate: '2023-03-20',
-            status: 'active',
-            avatar: 'JS'
-        },
-        {
-            id: 3,
-            ownerName: 'Robert Martinez',
-            venueName: 'Forest Retreat',
-            email: 'robert.m@example.com',
-            address: '123 Forest Lane, Seattle, WA 98101',
-            joiningDate: '2023-04-10',
-            status: 'inactive',
-            avatar: 'RM'
-        },
-        {
-            id: 4,
-            ownerName: 'William Harris',
-            venueName: 'Riverbank Tavern',
-            email: 'william.h@example.com',
-            address: '321 River Road, Portland, OR 97201',
-            joiningDate: '2023-05-05',
-            status: 'pending',
-            avatar: 'WH'
-        },
-        {
-            id: 5,
-            ownerName: 'David Brown',
-            venueName: 'Sunset Cafe',
-            email: 'david.b@example.com',
-            address: '654 Sunset Blvd, Los Angeles, CA 90028',
-            joiningDate: '2023-06-12',
-            status: 'active',
-            avatar: 'DB'
-        },
-        {
-            id: 6,
-            ownerName: 'Daniel Anderson',
-            venueName: 'Beachside Retreat',
-            email: 'daniel.a@example.com',
-            address: '987 Beach Way, San Diego, CA 92101',
-            joiningDate: '2023-07-08',
-            status: 'active',
-            avatar: 'DA'
-        },
-        {
-            id: 7,
-            ownerName: 'Linda Garcia',
-            venueName: 'Mountain View Lodge',
-            email: 'linda.g@example.com',
-            address: '147 Mountain Pass, Denver, CO 80201',
-            joiningDate: '2023-08-15',
-            status: 'inactive',
-            avatar: 'LG'
-        },
-        {
-            id: 8,
-            ownerName: 'Ava Jackson',
-            venueName: 'Valley View Inn',
-            email: 'ava.j@example.com',
-            address: '258 Valley Road, Phoenix, AZ 85001',
-            joiningDate: '2023-09-20',
-            status: 'pending',
-            avatar: 'AJ'
-        },
-        {
-            id: 9,
-            ownerName: 'Emily Davis',
-            venueName: 'Lakeside Inn',
-            email: 'emily.d@example.com',
-            address: '369 Lake Street, Chicago, IL 60601',
-            joiningDate: '2023-10-25',
-            status: 'active',
-            avatar: 'ED'
-        },
-        {
-            id: 10,
-            ownerName: 'Olivia Wilson',
-            venueName: 'Skyline Grille',
-            email: 'olivia.w@example.com',
-            address: '741 Skyline Drive, San Francisco, CA 94101',
-            joiningDate: '2023-11-30',
-            status: 'active',
-            avatar: 'OW'
-        },
-        {
-            id: 11,
-            ownerName: 'Sophia Lee',
-            venueName: 'Downtown Bistro',
-            email: 'sophia.l@example.com',
-            address: '852 Downtown Ave, Austin, TX 73301',
-            joiningDate: '2023-12-05',
-            status: 'pending',
-            avatar: 'SL'
+    // Add search states for city, state, country
+    const [citySearch, setCitySearch] = useState('');
+    const [stateSearch, setStateSearch] = useState('');
+    const [countrySearch, setCountrySearch] = useState('');
+    const [showCityDropdown, setShowCityDropdown] = useState(false);
+    const [showStateDropdown, setShowStateDropdown] = useState(false);
+    const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+    const [selectedCountry, setSelectedCountry] = useState(null);
+    const [selectedState, setSelectedState] = useState(null);
+
+    // Predefined options for search
+    // Get all countries, states, and cities from the library
+    const allCountries = Country.getAllCountries();
+    const allStates = selectedCountry ? State.getStatesOfCountry(selectedCountry.isoCode) : [];
+    const allCities = selectedState ? City.getCitiesOfState(selectedCountry.isoCode, selectedState.isoCode) : [];
+    // Filtered options based on search
+    const filteredCountryOptions = allCountries.filter(country =>
+        country.name.toLowerCase().includes(countrySearch.toLowerCase())
+    );
+    const filteredStateOptions = allStates.filter(state =>
+        state.name.toLowerCase().includes(stateSearch.toLowerCase())
+    );
+    const filteredCityOptions = allCities.filter(city =>
+        city.name.toLowerCase().includes(citySearch.toLowerCase())
+    );
+
+    // Fetch venues from API
+    const fetchVenues = async () => {
+        setIsLoadingVenues(true);
+        try {
+            const response = await api.get('/users/venues');
+            if (response.data.status) {
+                setVenues(response.data.data || []);
+            } else {
+                setError('Failed to fetch venues');
+            }
+        } catch (error) {
+            console.error('Error fetching venues:', error);
+            if (error.response?.status === 401) {
+                setError('Unauthorized. Please login again.');
+            } else {
+                setError('Failed to fetch venues. Please try again.');
+            }
+        } finally {
+            setIsLoadingVenues(false);
         }
-    ];
+    };
+
+    // Fetch venues on component mount
+    useEffect(() => {
+        fetchVenues();
+    }, []);
 
     const filteredVenues = venues.filter(venue => {
-        const matchesSearch = venue.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            venue.venueName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            venue.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = venue.ownerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            venue.venueName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            venue.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            venue.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            venue.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            venue.country?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFilter = filterStatus === 'all' || venue.status === filterStatus;
         return matchesSearch && matchesFilter;
     });
@@ -179,60 +140,205 @@ const Venues = () => {
             ...newVenue,
             [e.target.name]: e.target.value
         });
+        // Clear error when user starts typing
+        if (error) setError('');
     };
 
-    const handleAddVenue = () => {
-        console.log('Adding venue:', newVenue);
-        setShowAddModal(false);
+    const resetForm = () => {
         setNewVenue({
-            firstName: 'John',
-            lastName: 'Doe',
-            venueName: 'Nikki Beach Dubai',
-            email: 'example@gmail.com',
-            phone: '+535646514351124351',
-            addressLine1: '',
+            firstName: '',
+            lastName: '',
+            venueName: '',
+            venueImage: '',
+            email: '',
+            address: '',
+            phone: '',
+            countryCode: '+971',
+            dob: '',
+            image: '',
+            password: '',
+            role: 'user',
             city: '',
             state: '',
             zipCode: '',
-            country: '',
-            description: ''
+            country: 'UAE',
+            description: '',
+            website: ''
         });
+        setCitySearch('');
+        setStateSearch('');
+        setCountrySearch('');
+        setSelectedCountry(null);
+        setSelectedState(null);
+        setShowCityDropdown(false);
+        setShowStateDropdown(false);
+        setShowCountryDropdown(false);
+        setError('');
+        setSuccess('');
     };
 
     const handleCancel = () => {
         setShowAddModal(false);
-        setNewVenue({
-            firstName: 'John',
-            lastName: 'Doe',
-            venueName: 'Nikki Beach Dubai',
-            email: 'example@gmail.com',
-            phone: '+535646514351124351',
-            addressLine1: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            country: '',
-            description: ''
-        });
+        resetForm();
+    };
+
+    const handleAddVenue = async () => {
+        // Validation
+        if (!newVenue.firstName || !newVenue.lastName || !newVenue.venueName || !newVenue.email || !newVenue.password) {
+            setError('Please fill in all required fields');
+            return;
+        }
+
+        if (!newVenue.email.includes('@')) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        if (newVenue.password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            return;
+        }
+
+        setIsLoading(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            // Prepare the data according to API specification
+            const venueData = {
+                firstName: newVenue.firstName,
+                lastName: newVenue.lastName,
+                venueName: newVenue.venueName,
+                venueImage: newVenue.venueImage || '',
+                email: newVenue.email,
+                address: newVenue.address || '',
+                phone: newVenue.phone || '',
+                countryCode: newVenue.countryCode || '+971',
+                dob: newVenue.dob || '',
+                image: newVenue.image || '',
+                password: newVenue.password,
+                role: 'user',
+                city: newVenue.city || '',
+                state: newVenue.state || '',
+                zipCode: newVenue.zipCode || '',
+                country: newVenue.country || 'UAE',
+                description: newVenue.description || '',
+                website: newVenue.website || ''
+            };
+
+            const response = await api.post('/users/add/venue', venueData);
+
+            if (response.data.status) {
+                setSuccess('Venue created successfully!');
+                setShowAddModal(false);
+                resetForm();
+                // Optionally refresh the venues list here
+                fetchVenues();
+            } else {
+                setError(response.data.message || 'Failed to create venue');
+            }
+        } catch (error) {
+            console.error('Error creating venue:', error);
+            if (error.response?.data?.message) {
+                setError(error.response.data.message);
+            } else if (error.response?.status === 401) {
+                setError('Unauthorized. Please login again.');
+            } else if (error.response?.status === 400) {
+                setError('Invalid data. Please check your input.');
+            } else if (error.message === 'Network Error') {
+                setError('Network error. Please check your connection.');
+            } else {
+                setError('Failed to create venue. Please try again.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleViewRequest = (venue) => {
         setShowRequestModal(true);
     };
 
+    // Clear success message after 5 seconds
+    useEffect(() => {
+        if (success) {
+            const timer = setTimeout(() => setSuccess(''), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [success]);
+
+    // Handle clicking outside dropdowns to close them
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.relative')) {
+                setShowCityDropdown(false);
+                setShowStateDropdown(false);
+                setShowCountryDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // Reset dependent fields when country or state changes
+    useEffect(() => {
+        if (!selectedCountry) {
+            setSelectedState(null);
+            setNewVenue(prev => ({ ...prev, state: '', city: '' }));
+            setStateSearch('');
+            setCitySearch('');
+        }
+    }, [selectedCountry]);
+
+    useEffect(() => {
+        if (!selectedState) {
+            setNewVenue(prev => ({ ...prev, city: '' }));
+            setCitySearch('');
+        }
+    }, [selectedState]);
+
     return (
         <div className="flex flex-col gap-6">
             {/* Header */}
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Manage Venues</h1>
-                <button 
-                    onClick={() => setShowAddModal(true)}
-                    className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
-                >
-                    <FaPlus />
-                    Add New Venue
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={fetchVenues}
+                        disabled={isLoadingVenues}
+                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                        {isLoadingVenues ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
+                        ) : (
+                            <BiRefresh className='text-xl' />
+                        )}
+                        Refresh
+                    </button>
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+                    >
+                        <FaPlus />
+                        Add New Venue
+                    </button>
+                </div>
             </div>
+
+            {/* Success/Error Messages */}
+            {success && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
+                    {success}
+                </div>
+            )}
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                    {error}
+                </div>
+            )}
 
             {/* Search and Filters */}
             <div>
@@ -242,7 +348,7 @@ const Venues = () => {
                             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search"
+                                placeholder="Search by name, email, city, state, or country"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full bg-[#dadada] pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
@@ -259,14 +365,14 @@ const Venues = () => {
                         <option value="inactive">Inactive</option>
                         <option value="pending">Pending</option>
                     </select>
-                    <div className="relative">
+                    {/* <div className="relative">
                         <input
                             type="text"
                             placeholder="Custom"
                             className="px-4 py-2 placeholder:text-black border border-gray-300 rounded-lg focus:outline-none pr-10"
                         />
                         <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2" />
-                    </div>
+                    </div> */}
                     <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
                         <FaDownload />
                         Export
@@ -277,92 +383,116 @@ const Venues = () => {
             {/* Venues Table */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-900 text-white">
-                            <tr>
-                                <th className="px-6 py-3 text-left">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedVenues.length === filteredVenues.length && filteredVenues.length > 0}
-                                        onChange={handleSelectAll}
-                                        className="rounded"
-                                    />
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Email
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Address
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Joining Date
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredVenues.map((venue) => (
-                                <tr key={venue.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                    {isLoadingVenues ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                            <span className="ml-3 text-gray-600">Loading venues...</span>
+                        </div>
+                    ) : venues.length === 0 ? (
+                        <div className="text-center py-12">
+                            <div className="text-gray-500 text-lg mb-2">No venues found</div>
+                            <div className="text-gray-400 text-sm">Start by adding your first venue</div>
+                        </div>
+                    ) : (
+                        <table className="w-full">
+                            <thead className="bg-gray-900 text-white">
+                                <tr>
+                                    <th className="px-6 py-3 text-left">
                                         <input
                                             type="checkbox"
-                                            checked={selectedVenues.includes(venue.id)}
-                                            onChange={() => handleSelectVenue(venue.id)}
+                                            checked={selectedVenues.length === filteredVenues.length && filteredVenues.length > 0}
+                                            onChange={handleSelectAll}
                                             className="rounded"
                                         />
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/superadmin/venue/${venue.id}`)}   >
-                                        <div className="flex items-center">
-                                            <div className="w-10 h-10 bg-red-700 rounded-full flex items-center justify-center">
-                                                <span className="text-white text-sm font-medium">{venue.avatar}</span>
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{venue.ownerName}</div>
-                                                <div className="text-sm text-gray-500">{venue.venueName}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {venue.email}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {venue.address}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {venue.joiningDate}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {getStatusBadge(venue.status)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div className="flex gap-2">
-                                            <button 
-                                                onClick={() => handleViewRequest(venue)}
-                                                className="text-blue-600 hover:text-blue-900" 
-                                                title="View"
-                                            >
-                                                <FaEye />
-                                            </button>
-                                            <button className="text-green-600 hover:text-green-900" title="Edit">
-                                                <FaEdit />
-                                            </button>
-                                            <button className="text-red-600 hover:text-red-900" title="Delete">
-                                                <FaTrash />
-                                            </button>
-                                        </div>
-                                    </td>
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Email
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Address
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Joining Date
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Actions
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {filteredVenues.map((venue) => (
+                                    <tr key={venue.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedVenues.includes(venue.id)}
+                                                onChange={() => handleSelectVenue(venue.id)}
+                                                className="rounded"
+                                            />
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-red-500 rounded-full flex items-center justify-center mr-3">
+                                                    <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+                                                        <span className="text-white text-sm font-bold">
+                                                            {venue.avatar || 'V'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {venue.ownerName || `${venue.firstName || ''} ${venue.lastName || ''}`.trim() || 'N/A'}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">{venue.venueName || 'N/A'}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {venue.email || 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {venue.address || `${venue.city || ''} ${venue.state || ''} ${venue.country || ''}`.trim() || 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {venue.joiningDate || venue.createdAt ? new Date(venue.joiningDate || venue.createdAt).toLocaleDateString() : 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {getStatusBadge(venue.status || 'pending')}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    onClick={() => handleViewRequest(venue)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="View Details"
+                                                >
+                                                    <FaEye />
+                                                </button>
+                                                <button
+                                                    className="text-indigo-600 hover:text-indigo-900"
+                                                    title="Edit"
+                                                >
+                                                    <FaEdit />
+                                                </button>
+                                                <button
+                                                    className="text-red-600 hover:text-red-900"
+                                                    title="Delete"
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
 
@@ -401,26 +531,26 @@ const Venues = () => {
             {/* Add Venue Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-[#00000080] bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                        {/* Modal Header */}
-                        <div className="flex justify-between items-start mb-6">
-                            <h2 className="text-2xl font-bold">Add New Venue</h2>
-                            <button 
-                                onClick={handleCancel}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <FaTimes />
-                            </button>
-                        </div>
+                    <div className="bg-white rounded-xl max-w-4xl w-full mx-4 p-8">
+                        <div className="max-h-[80vh] overflow-y-auto">
+                            {/* Modal Header */}
+                            <div className="flex justify-between items-start mb-6">
+                                <h2 className="text-2xl font-bold">Add New Venue</h2>
+                                <button
+                                    onClick={handleCancel}
+                                    className="text-gray-500 hover:text-gray-700"
+                                >
+                                    <FaTimes />
+                                </button>
+                            </div>
 
-                        {/* Profile Picture Section */}
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="flex-1">
+                            {/* Form Content */}
+                            <div className="space-y-6">
                                 {/* Personal Information */}
-                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="grid grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            First Name
+                                            First Name *
                                         </label>
                                         <input
                                             type="text"
@@ -429,11 +559,12 @@ const Venues = () => {
                                             onChange={handleInputChange}
                                             placeholder="Enter First Name"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Last Name
+                                            Last Name *
                                         </label>
                                         <input
                                             type="text"
@@ -442,34 +573,40 @@ const Venues = () => {
                                             onChange={handleInputChange}
                                             placeholder="Enter Last Name"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
                                         />
                                     </div>
-                                </div>
-
-                                {/* Venue Details */}
-                                <div className="space-y-4 mb-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Venue Name
+                                            Venue Name *
                                         </label>
                                         <input
                                             type="text"
                                             name="venueName"
                                             value={newVenue.venueName}
                                             onChange={handleInputChange}
+                                            placeholder="Enter Venue Name"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
                                         />
                                     </div>
+                                </div>
+
+                                {/* Venue Details */}
+                                <div className="grid grid-cols-3 gap-4">
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Email Address
+                                            Email Address *
                                         </label>
                                         <input
                                             type="email"
                                             name="email"
                                             value={newVenue.email}
                                             onChange={handleInputChange}
+                                            placeholder="Enter Email Address"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
                                         />
                                     </div>
                                     <div>
@@ -481,93 +618,286 @@ const Venues = () => {
                                             name="phone"
                                             value={newVenue.phone}
                                             onChange={handleInputChange}
+                                            placeholder="Enter Phone Number"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Date of Birth
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="dob"
+                                            value={newVenue.dob}
+                                            onChange={handleInputChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
                                 </div>
 
-                                {/* Address Information */}
-                                <div className="space-y-4 mb-6">
+                                {/* Contact Information */}
+                                <div className="grid grid-cols-3 gap-4">
+
+                                    {/* Password */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Address Line 1
+                                            Password *
+                                        </label>
+                                        <input
+                                            type="password"
+                                            name="password"
+                                            value={newVenue.password}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter Password (min 6 characters)"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Country
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="country"
+                                                value={countrySearch}
+                                                onChange={(e) => {
+                                                    setCountrySearch(e.target.value);
+                                                    setShowCountryDropdown(true);
+                                                    if (e.target.value === '') {
+                                                        setNewVenue({ ...newVenue, country: '' });
+                                                    }
+                                                }}
+                                                onFocus={() => setShowCountryDropdown(true)}
+                                                placeholder="Search or type country name"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                            {showCountryDropdown && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                    {filteredCountryOptions.map((country) => (
+                                                        <div
+                                                            key={country.isoCode}
+                                                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                            onClick={() => {
+                                                                setNewVenue({ ...newVenue, country: country.name });
+                                                                setCountrySearch(country.name);
+                                                                setSelectedCountry(country);
+                                                                setSelectedState(null);
+                                                                setNewVenue(prev => ({ ...prev, state: '', city: '' }));
+                                                                setStateSearch('');
+                                                                setCitySearch('');
+                                                                setShowCountryDropdown(false);
+                                                            }}
+                                                        >
+                                                            {country.name}
+                                                        </div>
+                                                    ))}
+                                                    {filteredCountryOptions.length === 0 && (
+                                                        <div className="px-3 py-2 text-gray-500">
+                                                            No countries found
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                 
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            State
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="state"
+                                                value={stateSearch}
+                                                onChange={(e) => {
+                                                    setStateSearch(e.target.value);
+                                                    setShowStateDropdown(true);
+                                                    if (e.target.value === '') {
+                                                        setNewVenue({ ...newVenue, state: '' });
+                                                    }
+                                                }}
+                                                onFocus={() => setShowStateDropdown(true)}
+                                                placeholder={selectedCountry ? "Search or type state name" : "Select a country first"}
+                                                className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!selectedCountry ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                disabled={!selectedCountry}
+                                            />
+                                            {!selectedCountry && (
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    Please select a country first
+                                                </div>
+                                            )}
+                                            {/* {selectedCountry && (
+                                                <div className="text-xs text-green-600 mt-1">
+                                                    Selected: {selectedCountry.name}
+                                                </div>
+                                            )} */}
+                                            {showStateDropdown && selectedCountry && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                    {filteredStateOptions.map((state) => (
+                                                        <div
+                                                            key={state.isoCode}
+                                                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                            onClick={() => {
+                                                                setNewVenue({ ...newVenue, state: state.name });
+                                                                setStateSearch(state.name);
+                                                                setSelectedState(state);
+                                                                setNewVenue(prev => ({ ...prev, city: '' }));
+                                                                setCitySearch('');
+                                                                setShowStateDropdown(false);
+                                                            }}
+                                                        >
+                                                            {state.name}
+                                                        </div>
+                                                    ))}
+                                                    {filteredStateOptions.length === 0 && (
+                                                        <div className="px-3 py-2 text-gray-500">
+                                                            No states found for this country
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                       <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            City
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                value={citySearch}
+                                                onChange={(e) => {
+                                                    setCitySearch(e.target.value);
+                                                    setShowCityDropdown(true);
+                                                    if (e.target.value === '') {
+                                                        setNewVenue({ ...newVenue, city: '' });
+                                                    }
+                                                }}
+                                                onFocus={() => setShowCityDropdown(true)}
+                                                placeholder={selectedState ? "Search or type city name" : "Select a state first"}
+                                                className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!selectedState ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                                disabled={!selectedState}
+                                            />
+                                            {!selectedState && (
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    Please select a state first
+                                                </div>
+                                            )}
+                                            {/* {selectedState && (
+                                                <div className="text-xs text-green-600 mt-1">
+                                                    Selected: {selectedState.name}
+                                                </div>
+                                            )} */}
+                                            {showCityDropdown && selectedState && (
+                                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                                    {filteredCityOptions.map((city) => (
+                                                        <div
+                                                            key={city.id}
+                                                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                                            onClick={() => {
+                                                                setNewVenue({ ...newVenue, city: city.name });
+                                                                setCitySearch(city.name);
+                                                                setShowCityDropdown(false);
+                                                            }}
+                                                        >
+                                                            {city.name}
+                                                        </div>
+                                                    ))}
+                                                    {filteredCityOptions.length === 0 && (
+                                                        <div className="px-3 py-2 text-gray-500">
+                                                            No cities found for this state
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Zip Code
                                         </label>
                                         <input
                                             type="text"
-                                            name="addressLine1"
-                                            value={newVenue.addressLine1}
+                                            name="zipCode"
+                                            value={newVenue.zipCode}
                                             onChange={handleInputChange}
-                                            placeholder="Address"
+                                            placeholder="Enter Zip Code"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                City
-                                            </label>
-                                            <select
-                                                name="city"
-                                                value={newVenue.city}
-                                                onChange={handleInputChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            >
-                                                <option value="">City</option>
-                                                <option value="Dubai">Dubai</option>
-                                                <option value="Abu Dhabi">Abu Dhabi</option>
-                                                <option value="Sharjah">Sharjah</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                State
-                                            </label>
-                                            <select
-                                                name="state"
-                                                value={newVenue.state}
-                                                onChange={handleInputChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            >
-                                                <option value="">State</option>
-                                                <option value="Dubai">Dubai</option>
-                                                <option value="Abu Dhabi">Abu Dhabi</option>
-                                                <option value="Sharjah">Sharjah</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Zip code
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="zipCode"
-                                                value={newVenue.zipCode}
-                                                onChange={handleInputChange}
-                                                placeholder="Zip code"
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Country
-                                            </label>
-                                            <select
-                                                name="country"
-                                                value={newVenue.country}
-                                                onChange={handleInputChange}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            >
-                                                <option value="">Country</option>
-                                                <option value="UAE">UAE</option>
-                                                <option value="USA">USA</option>
-                                                <option value="UK">UK</option>
-                                            </select>
-                                        </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Website
+                                        </label>
+                                        <input
+                                            type="url"
+                                            name="website"
+                                            value={newVenue.website}
+                                            onChange={handleInputChange}
+                                            placeholder="https://example.com"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
                                     </div>
                                 </div>
 
+
+
+
+                                {/* Additional Information */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Image URL
+                                        </label>
+                                        <input
+                                            type="url"
+                                            name="image"
+                                            value={newVenue.image}
+                                            onChange={handleInputChange}
+                                            placeholder="https://example.com/image.jpg"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Venue Image URL
+                                        </label>
+                                        <input
+                                            type="url"
+                                            name="venueImage"
+                                            value={newVenue.venueImage}
+                                            onChange={handleInputChange}
+                                            placeholder="https://example.com/image.jpg"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                                {/* Address Information */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Address
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={newVenue.address}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter Address"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    </div>
+
+                                </div>
                                 {/* Description */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -577,48 +907,37 @@ const Venues = () => {
                                         name="description"
                                         value={newVenue.description}
                                         onChange={handleInputChange}
-                                        placeholder="Description here..."
+                                        placeholder="Enter venue description..."
                                         rows="3"
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
                             </div>
 
-                            {/* Profile Picture */}
-                            <div className="ml-6 flex flex-col items-center">
-                                <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-red-500 rounded-full flex items-center justify-center mb-4">
-                                    <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center">
-                                        <span className="text-white text-2xl font-bold">
-                                            {newVenue.firstName.charAt(0)}{newVenue.lastName.charAt(0)}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <button className="w-full bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
-                                        <FaUpload />
-                                        Upload
-                                    </button>
-                                    <button className="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
-                                        Remove
-                                    </button>
-                                </div>
+                            {/* Action Buttons */}
+                            <div className="flex justify-end gap-4 pt-6">
+                                <button
+                                    onClick={handleCancel}
+                                    className="bg-gray-200 text-black px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                                    disabled={isLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleAddVenue}
+                                    disabled={isLoading}
+                                    className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        'Add'
+                                    )}
+                                </button>
                             </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex justify-end gap-4 pt-4">
-                            <button
-                                onClick={handleCancel}
-                                className="bg-gray-200 text-black px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleAddVenue}
-                                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-                            >
-                                Add
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -631,7 +950,7 @@ const Venues = () => {
                         {/* Modal Header */}
                         <div className="flex justify-between items-start mb-6">
                             <h2 className="text-2xl font-bold">Request Detail</h2>
-                            <button 
+                            <button
                                 onClick={() => setShowRequestModal(false)}
                                 className="text-gray-500 hover:text-gray-700"
                             >
